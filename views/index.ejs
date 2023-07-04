@@ -4,11 +4,23 @@
     <img src="/images/TEAMFM.png" alt="" srcset="" class="radiopaper">
   </div>
   <div class="filter">
-    <label for="time-frame">Filter:</label>
-    <select id="time-frame">
+    <label for="time-frame-days">Filter by Days:</label>
+    <select id="time-frame-days">
       <option value="all">All</option>
-      <option value="week">Last Week</option>
-      <option value="day">Last 24 Hours</option>
+      <option value="7">Last 7 Days</option>
+      <option value="14">Last 14 Days</option>
+      <option value="30">Last 30 Days</option>
+    </select>
+    <label for="time-frame-hours">Filter by Hours:</label>
+    <select id="time-frame-hours">
+      <option value="all">All</option>
+      <option value="12">Last 12 Hours</option>
+      <option value="9">Last 9 Hours</option>
+      <option value="6">Last 6 Hours</option>
+      <option value="3">Last 3 Hours</option>
+      <option value="2">Last 2 Hours</option>
+      <option value="1">Last 1 Hour</option>
+      <option value="0.5">Last 30 Minutes</option>
     </select>
   </div>
   <div class="Playing">
@@ -39,42 +51,47 @@
 
         <% for (let i = 1; i <= totalPages; i++) { %>
           <% if (i === page) { %>
-            <span class="current-page"><%= i %></span>
+            <span class="current-page current"><%= i %></span>
           <% } else { %>
             <a href="/?page=<%= i %>"><%= i %></a>
           <% } %>
         <% } %>
 
         <% if (page < totalPages) { %>
-          <a href="/?page=<%= page + 1 %>">Next</a>
+          <a href="/?page=<%= page + 1 %>" class="next">Next</a>
         <% } %>
       </div>
     <% } %>
   </div>
 </div>
-
+<%- include('footer') %>
 <script>
   // JavaScript code to handle filter selection
-  const filterSelect = document.getElementById('time-frame');
-  filterSelect.addEventListener('change', () => {
-    const selectedValue = filterSelect.value;
-    let filteredTrackHistory = [];
+  const filterSelectDays = document.getElementById('time-frame-days');
+  const filterSelectHours = document.getElementById('time-frame-hours');
+  filterSelectDays.addEventListener('change', applyFilter);
+  filterSelectHours.addEventListener('change', applyFilter);
 
-    if (selectedValue === 'all') {
-      filteredTrackHistory = paginatedTrackHistory;
-    } else if (selectedValue === 'week') {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      filteredTrackHistory = paginatedTrackHistory.filter(track => {
+  function applyFilter() {
+    const selectedDays = filterSelectDays.value;
+    const selectedHours = filterSelectHours.value;
+    let filteredTrackHistory = paginatedTrackHistory;
+
+    if (selectedDays !== 'all') {
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - parseInt(selectedDays));
+      filteredTrackHistory = filteredTrackHistory.filter(track => {
         const trackTime = new Date(track.timestamp);
-        return trackTime >= oneWeekAgo;
+        return trackTime >= daysAgo;
       });
-    } else if (selectedValue === 'day') {
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-      filteredTrackHistory = paginatedTrackHistory.filter(track => {
+    }
+
+    if (selectedHours !== 'all') {
+      const hoursAgo = new Date();
+      hoursAgo.setHours(hoursAgo.getHours() - parseFloat(selectedHours));
+      filteredTrackHistory = filteredTrackHistory.filter(track => {
         const trackTime = new Date(track.timestamp);
-        return trackTime >= oneDayAgo;
+        return trackTime >= hoursAgo;
       });
     }
 
@@ -94,5 +111,5 @@
       listItem.appendChild(p);
       trackHistoryList.appendChild(listItem);
     });
-  });
+  }
 </script>
