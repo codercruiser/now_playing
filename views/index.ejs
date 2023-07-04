@@ -1,0 +1,98 @@
+<%- include('header') %>
+<div class="outer">
+  <div class="container">
+    <img src="/images/TEAMFM.png" alt="" srcset="" class="radiopaper">
+  </div>
+  <div class="filter">
+    <label for="time-frame">Filter:</label>
+    <select id="time-frame">
+      <option value="all">All</option>
+      <option value="week">Last Week</option>
+      <option value="day">Last 24 Hours</option>
+    </select>
+  </div>
+  <div class="Playing">
+    <div class="current">
+      <h1>Now Playing</h1>
+      <p>Server Name: <%= data.servername %></p>
+      <p>Now Playing: <%= data.nowplaying %></p>
+      <img class="current-playing-img" src="<%= data.coverart %>" alt="Cover Art">
+    </div>
+
+    <h2>Track History</h2>
+
+    <ul class="track-history">
+      <% for (let track of paginatedTrackHistory) { %>
+        <li>
+          <img src="<%= track.coverart %>" alt="Cover Art" onerror="this.src='placeholder.jpg'">
+          <p><%= track.nowplaying.charAt(0).toUpperCase() + track.nowplaying.slice(1) %></p>
+        </li>
+      <% } %>
+    </ul>
+
+    <!-- Pagination links -->
+    <% if (totalPages > 1) { %>
+      <div class="pagination">
+        <% if (page > 1) { %>
+          <a href="/?page=<%= page - 1 %>">Previous</a>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <% if (i === page) { %>
+            <span class="current-page"><%= i %></span>
+          <% } else { %>
+            <a href="/?page=<%= i %>"><%= i %></a>
+          <% } %>
+        <% } %>
+
+        <% if (page < totalPages) { %>
+          <a href="/?page=<%= page + 1 %>">Next</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // JavaScript code to handle filter selection
+  const filterSelect = document.getElementById('time-frame');
+  filterSelect.addEventListener('change', () => {
+    const selectedValue = filterSelect.value;
+    let filteredTrackHistory = [];
+
+    if (selectedValue === 'all') {
+      filteredTrackHistory = paginatedTrackHistory;
+    } else if (selectedValue === 'week') {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      filteredTrackHistory = paginatedTrackHistory.filter(track => {
+        const trackTime = new Date(track.timestamp);
+        return trackTime >= oneWeekAgo;
+      });
+    } else if (selectedValue === 'day') {
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      filteredTrackHistory = paginatedTrackHistory.filter(track => {
+        const trackTime = new Date(track.timestamp);
+        return trackTime >= oneDayAgo;
+      });
+    }
+
+    // Clear the current track history list
+    const trackHistoryList = document.querySelector('.track-history');
+    trackHistoryList.innerHTML = '';
+
+    // Render the filtered track history
+    filteredTrackHistory.forEach(track => {
+      const listItem = document.createElement('li');
+      const img = document.createElement('img');
+      img.src = track.coverart;
+      img.alt = 'Cover Art';
+      listItem.appendChild(img);
+      const p = document.createElement('p');
+      p.textContent = track.nowplaying.charAt(0).toUpperCase() + track.nowplaying.slice(1);
+      listItem.appendChild(p);
+      trackHistoryList.appendChild(listItem);
+    });
+  });
+</script>
